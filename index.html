@@ -46,39 +46,71 @@
         });
 
         function savePost(title, content, imageUrl) {
+            const post = {
+                title: title,
+                content: content,
+                imageUrl: imageUrl
+            };
+            let posts = localStorage.getItem('blogPosts');
+            if (!posts) {
+                posts = [];
+            } else {
+                posts = JSON.parse(posts);
+            }
+            posts.push(post);
+            localStorage.setItem('blogPosts', JSON.stringify(posts));
+
+            const link = document.createElement('a');
+            link.href = '#';
+            link.textContent = title;
+            link.addEventListener('click', () => {
+                showPost(post);
+            });
+            const postDiv = document.createElement('div');
+            postDiv.classList.add('blog-post');
+            postDiv.appendChild(link);
+            blogPostsDiv.appendChild(postDiv);
+        }
+
+        function showPost(post) {
             const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title}</title>
+    <title>${post.title}</title>
 </head>
 <body>
-    <h1>${title}</h1>
-    <p>${content}</p>
-    ${imageUrl ? `<img src="${imageUrl}" alt="博客图片">` : ''}
+    <h1>${post.title}</h1>
+    <p>${post.content}</p>
+    ${post.imageUrl ? `<img src="${post.imageUrl}" alt="博客图片">` : ''}
 </body>
 </html>
             `;
-
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const fileName = `post_${Date.now()}.html`;
-            a.download = fileName;
-            a.click();
-            URL.revokeObjectURL(url);
-
-            const link = document.createElement('a');
-            link.href = fileName;
-            link.textContent = title;
-            const postDiv = document.createElement('div');
-            postDiv.classList.add('blog-post');
-            postDiv.appendChild(link);
-            blogPostsDiv.appendChild(postDiv);
+            const newWindow = window.open();
+            newWindow.document.write(htmlContent);
         }
+
+        // 页面加载时显示已保存的文章
+        window.addEventListener('load', () => {
+            let posts = localStorage.getItem('blogPosts');
+            if (posts) {
+                posts = JSON.parse(posts);
+                posts.forEach(post => {
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.textContent = post.title;
+                    link.addEventListener('click', () => {
+                        showPost(post);
+                    });
+                    const postDiv = document.createElement('div');
+                    postDiv.classList.add('blog-post');
+                    postDiv.appendChild(link);
+                    blogPostsDiv.appendChild(postDiv);
+                });
+            }
+        });
     </script>
 </body>
 

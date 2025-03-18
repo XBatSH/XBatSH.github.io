@@ -42,15 +42,32 @@
         const blogPostsDiv = document.getElementById('blog-posts');
 
         addPostBtn.addEventListener('click', () => {
-            const postContent = prompt('请输入新的博客内容：');
-            if (postContent) {
-                const newPost = document.createElement('div');
-                newPost.classList.add('blog-post');
-                newPost.textContent = postContent;
-                blogPostsDiv.appendChild(newPost);
-            }
+            const newWindow = window.open('new_post.html', '_blank', 'width=800,height=600');
         });
+
+        function savePost(title, content, imageUrl) {
+            const data = { title, content, imageUrl };
+            fetch('/save-post', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+              .then(response => response.json())
+              .then(result => {
+                    if (result.success) {
+                        const link = document.createElement('a');
+                        link.href = result.filePath;
+                        link.textContent = title;
+                        const postDiv = document.createElement('div');
+                        postDiv.classList.add('blog-post');
+                        postDiv.appendChild(link);
+                        blogPostsDiv.appendChild(postDiv);
+                    }
+                });
+        }
     </script>
 </body>
 
-</html> 
+</html>    

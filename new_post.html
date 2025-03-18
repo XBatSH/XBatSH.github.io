@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新建博客文章</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>新建博客文章</h1>
+    <label for="post-title">标题：</label>
+    <input type="text" id="post-title">
+    <label for="post-content">内容：</label>
+    <textarea id="post-content" rows="10"></textarea>
+    <label for="post-image">上传图片链接：</label>
+    <input type="text" id="post-image">
+    <button onclick="submitPost()">保存文章</button>
+
+    <script>
+        function submitPost() {
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            const imageUrl = document.getElementById('post-image').value;
+            window.opener.savePost(title, content, imageUrl);
+            window.close();
+        }
+    </script>
+</body>
+
+</html>    

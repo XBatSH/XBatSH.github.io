@@ -125,17 +125,21 @@
         }
 
         function generatePDF(post) {
-            const doc = new jsPDF();
-            doc.setFontSize(20);
-            doc.text(post.title, 10, 20);
-            doc.setFontSize(14);
-            doc.text(post.content, 10, 30);
+            try {
+                const doc = new jsPDF();
+                doc.setFontSize(20);
+                doc.text(post.title, 10, 20);
+                doc.setFontSize(14);
+                doc.text(post.content, 10, 30);
 
-            if (post.imageUrl) {
-                doc.addImage(post.imageUrl, 'PNG', 10, 40, 50, 50);
+                if (post.imageUrl) {
+                    doc.addImage(post.imageUrl, 'PNG', 10, 40, 50, 50);
+                }
+
+                doc.save(`${post.title}.pdf`);
+            } catch (error) {
+                console.error('生成 PDF 时出错:', error);
             }
-
-            doc.save(`${post.title}.pdf`);
         }
 
         // 页面加载时显示已保存的文章

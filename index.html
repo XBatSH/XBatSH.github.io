@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人博客</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .blog-post {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>个人博客</h1>
+    <button id="add-post-btn">新增写作</button>
+    <div id="blog-posts"></div>
+
+    <script>
+        const addPostBtn = document.getElementById('add-post-btn');
+        const blogPostsDiv = document.getElementById('blog-posts');
+
+        addPostBtn.addEventListener('click', () => {
+            const postContent = prompt('请输入新的博客内容：');
+            if (postContent) {
+                const newPost = document.createElement('div');
+                newPost.classList.add('blog-post');
+                newPost.textContent = postContent;
+                blogPostsDiv.appendChild(newPost);
+            }
+        });
+    </script>
+</body>
+
+</html> 

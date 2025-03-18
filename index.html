@@ -28,6 +28,14 @@
             border: 1px solid #ccc;
             padding: 20px;
             margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .post-time {
+            font-size: 0.9em;
+            color: #777;
         }
     </style>
 </head>
@@ -46,10 +54,13 @@
         });
 
         function savePost(title, content, imageUrl) {
+            const now = new Date();
+            const formattedDate = now.toLocaleString();
             const post = {
                 title: title,
                 content: content,
-                imageUrl: imageUrl
+                imageUrl: imageUrl,
+                time: formattedDate
             };
             let posts = localStorage.getItem('blogPosts');
             if (!posts) {
@@ -66,9 +77,15 @@
             link.addEventListener('click', () => {
                 showPost(post);
             });
+
+            const timeSpan = document.createElement('span');
+            timeSpan.classList.add('post-time');
+            timeSpan.textContent = formattedDate;
+
             const postDiv = document.createElement('div');
             postDiv.classList.add('blog-post');
             postDiv.appendChild(link);
+            postDiv.appendChild(timeSpan);
             blogPostsDiv.appendChild(postDiv);
         }
 
@@ -85,6 +102,7 @@
     <h1>${post.title}</h1>
     <p>${post.content}</p>
     ${post.imageUrl ? `<img src="${post.imageUrl}" alt="博客图片">` : ''}
+    <p class="post-time">创建时间: ${post.time}</p>
 </body>
 </html>
             `;
@@ -104,9 +122,15 @@
                     link.addEventListener('click', () => {
                         showPost(post);
                     });
+
+                    const timeSpan = document.createElement('span');
+                    timeSpan.classList.add('post-time');
+                    timeSpan.textContent = post.time;
+
                     const postDiv = document.createElement('div');
                     postDiv.classList.add('blog-post');
                     postDiv.appendChild(link);
+                    postDiv.appendChild(timeSpan);
                     blogPostsDiv.appendChild(postDiv);
                 });
             }

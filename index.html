@@ -37,7 +37,12 @@
             font-size: 0.9em;
             color: #777;
         }
+
+        .download-btn {
+            margin-left: 10px;
+        }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
@@ -82,10 +87,18 @@
             timeSpan.classList.add('post-time');
             timeSpan.textContent = formattedDate;
 
+            const downloadBtn = document.createElement('button');
+            downloadBtn.textContent = '下载 PDF';
+            downloadBtn.classList.add('download-btn');
+            downloadBtn.addEventListener('click', () => {
+                generatePDF(post);
+            });
+
             const postDiv = document.createElement('div');
             postDiv.classList.add('blog-post');
             postDiv.appendChild(link);
             postDiv.appendChild(timeSpan);
+            postDiv.appendChild(downloadBtn);
             blogPostsDiv.appendChild(postDiv);
         }
 
@@ -103,11 +116,26 @@
     <p>${post.content}</p>
     ${post.imageUrl ? `<img src="${post.imageUrl}" alt="博客图片">` : ''}
     <p class="post-time">创建时间: ${post.time}</p>
+    <p class="post-time">数据来源: localStorage</p>
 </body>
 </html>
             `;
             const newWindow = window.open();
             newWindow.document.write(htmlContent);
+        }
+
+        function generatePDF(post) {
+            const doc = new jsPDF();
+            doc.setFontSize(20);
+            doc.text(post.title, 10, 20);
+            doc.setFontSize(14);
+            doc.text(post.content, 10, 30);
+
+            if (post.imageUrl) {
+                doc.addImage(post.imageUrl, 'PNG', 10, 40, 50, 50);
+            }
+
+            doc.save(`${post.title}.pdf`);
         }
 
         // 页面加载时显示已保存的文章
@@ -127,10 +155,18 @@
                     timeSpan.classList.add('post-time');
                     timeSpan.textContent = post.time;
 
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.textContent = '下载 PDF';
+                    downloadBtn.classList.add('download-btn');
+                    downloadBtn.addEventListener('click', () => {
+                        generatePDF(post);
+                    });
+
                     const postDiv = document.createElement('div');
                     postDiv.classList.add('blog-post');
                     postDiv.appendChild(link);
                     postDiv.appendChild(timeSpan);
+                    postDiv.appendChild(downloadBtn);
                     blogPostsDiv.appendChild(postDiv);
                 });
             }

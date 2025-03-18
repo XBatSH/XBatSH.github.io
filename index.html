@@ -46,26 +46,38 @@
         });
 
         function savePost(title, content, imageUrl) {
-            const data = { title, content, imageUrl };
-            fetch('/save-post', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-              .then(response => response.json())
-              .then(result => {
-                    if (result.success) {
-                        const link = document.createElement('a');
-                        link.href = result.filePath;
-                        link.textContent = title;
-                        const postDiv = document.createElement('div');
-                        postDiv.classList.add('blog-post');
-                        postDiv.appendChild(link);
-                        blogPostsDiv.appendChild(postDiv);
-                    }
-                });
+            const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+</head>
+<body>
+    <h1>${title}</h1>
+    <p>${content}</p>
+    ${imageUrl ? `<img src="${imageUrl}" alt="博客图片">` : ''}
+</body>
+</html>
+            `;
+
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const fileName = `post_${Date.now()}.html`;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            const link = document.createElement('a');
+            link.href = fileName;
+            link.textContent = title;
+            const postDiv = document.createElement('div');
+            postDiv.classList.add('blog-post');
+            postDiv.appendChild(link);
+            blogPostsDiv.appendChild(postDiv);
         }
     </script>
 </body>

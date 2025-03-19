@@ -4,178 +4,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人博客</title>
+    <title>个人网页</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
 
-        button {
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .blog-post {
-            border: 1px solid #ccc;
-            padding: 20px;
-            margin-top: 20px;
+       .header {
+            background-image: url('https://dummyimage.com/1200x400/00aaff/ffffff&text=风景照片');
+            background-size: cover;
+            background-position: center;
+            height: 400px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
+            color: white;
+            font-size: 36px;
         }
 
-        .post-time {
-            font-size: 0.9em;
-            color: #777;
+       .section {
+            padding: 40px;
         }
 
-        .download-btn {
-            margin-left: 10px;
+       .section h2 {
+            font-size: 24px;
+        }
+
+       .upload-container {
+            margin-top: 20px;
+        }
+
+       .upload-container input[type="file"] {
+            margin-bottom: 10px;
+        }
+
+       .reading-container {
+            margin-top: 20px;
+        }
+
+       .reading-container textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+
+       .image-container {
+            margin-top: 20px;
+        }
+
+       .image-container img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
-    <h1>个人博客</h1>
-    <button id="add-post-btn">新增写作</button>
-    <div id="blog-posts"></div>
+    <div class="header">
+        <h1>我的个人网页</h1>
+    </div>
+    <div class="section">
+        <h2>个人简介</h2>
+        <p>这里是我的个人简介，我叫[你的名字]，目前从事[你的职业]。我在这个领域有[X]年的经验，对[相关领域]有着浓厚的兴趣。</p>
+    </div>
+    <div class="section">
+        <h2>兴趣爱好</h2>
+        <p>我的兴趣爱好广泛，包括阅读、旅行和运动。阅读让我开阔视野，旅行让我体验不同的文化，运动则让我保持健康。</p>
+        <div class="upload-container">
+            <input type="file" id="travel-image-upload" accept="image/*">
+            <button onclick="uploadTravelImage()">上传旅游图片</button>
+        </div>
+        <div id="travel-image-container" class="image-container"></div>
+    </div>
+    <div class="section">
+        <h2>读书心得</h2>
+        <div class="reading-container">
+            <textarea id="reading-text" placeholder="输入新的读书心得"></textarea>
+            <button onclick="addReading()">添加心得</button>
+        </div>
+        <div id="reading-list"></div>
+    </div>
 
     <script>
-        const addPostBtn = document.getElementById('add-post-btn');
-        const blogPostsDiv = document.getElementById('blog-posts');
-
-        addPostBtn.addEventListener('click', () => {
-            const newWindow = window.open('new_post.html', '_blank', 'width=800,height=600');
-        });
-
-        function savePost(title, content, imageUrl) {
-            const now = new Date();
-            const formattedDate = now.toLocaleString();
-            const post = {
-                title: title,
-                content: content,
-                imageUrl: imageUrl,
-                time: formattedDate
-            };
-            let posts = localStorage.getItem('blogPosts');
-            if (!posts) {
-                posts = [];
-            } else {
-                posts = JSON.parse(posts);
-            }
-            posts.push(post);
-            localStorage.setItem('blogPosts', JSON.stringify(posts));
-
-            const link = document.createElement('a');
-            link.href = '#';
-            link.textContent = title;
-            link.addEventListener('click', () => {
-                showPost(post);
-            });
-
-            const timeSpan = document.createElement('span');
-            timeSpan.classList.add('post-time');
-            timeSpan.textContent = formattedDate;
-
-            const downloadBtn = document.createElement('button');
-            downloadBtn.textContent = '下载 PDF';
-            downloadBtn.classList.add('download-btn');
-            downloadBtn.addEventListener('click', () => {
-                generatePDF(post);
-            });
-
-            const postDiv = document.createElement('div');
-            postDiv.classList.add('blog-post');
-            postDiv.appendChild(link);
-            postDiv.appendChild(timeSpan);
-            postDiv.appendChild(downloadBtn);
-            blogPostsDiv.appendChild(postDiv);
-        }
-
-        function showPost(post) {
-            const htmlContent = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${post.title}</title>
-</head>
-<body>
-    <h1>${post.title}</h1>
-    <p>${post.content}</p>
-    ${post.imageUrl ? `<img src="${post.imageUrl}" alt="博客图片">` : ''}
-    <p class="post-time">创建时间: ${post.time}</p>
-    <p class="post-time">数据来源: localStorage</p>
-</body>
-</html>
-            `;
-            const newWindow = window.open();
-            newWindow.document.write(htmlContent);
-        }
-
-        function generatePDF(post) {
-            try {
-                const doc = new jsPDF();
-                doc.setFontSize(20);
-                doc.text(post.title, 10, 20);
-                doc.setFontSize(14);
-                doc.text(post.content, 10, 30);
-
-                if (post.imageUrl) {
-                    doc.addImage(post.imageUrl, 'PNG', 10, 40, 50, 50);
-                }
-
-                doc.save(`${post.title}.pdf`);
-            } catch (error) {
-                console.error('生成 PDF 时出错:', error);
+        function addReading() {
+            const readingText = document.getElementById('reading-text').value;
+            if (readingText) {
+                const readingList = document.getElementById('reading-list');
+                const newReading = document.createElement('p');
+                newReading.textContent = readingText;
+                readingList.appendChild(newReading);
+                document.getElementById('reading-text').value = '';
             }
         }
 
-        // 页面加载时显示已保存的文章
-        window.addEventListener('load', () => {
-            let posts = localStorage.getItem('blogPosts');
-            if (posts) {
-                posts = JSON.parse(posts);
-                posts.forEach(post => {
-                    const link = document.createElement('a');
-                    link.href = '#';
-                    link.textContent = post.title;
-                    link.addEventListener('click', () => {
-                        showPost(post);
-                    });
-
-                    const timeSpan = document.createElement('span');
-                    timeSpan.classList.add('post-time');
-                    timeSpan.textContent = post.time;
-
-                    const downloadBtn = document.createElement('button');
-                    downloadBtn.textContent = '下载 PDF';
-                    downloadBtn.classList.add('download-btn');
-                    downloadBtn.addEventListener('click', () => {
-                        generatePDF(post);
-                    });
-
-                    const postDiv = document.createElement('div');
-                    postDiv.classList.add('blog-post');
-                    postDiv.appendChild(link);
-                    postDiv.appendChild(timeSpan);
-                    postDiv.appendChild(downloadBtn);
-                    blogPostsDiv.appendChild(postDiv);
-                });
+        function uploadTravelImage() {
+            const input = document.getElementById('travel-image-upload');
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const imageContainer = document.getElementById('travel-image-container');
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    imageContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
             }
-        });
+        }
     </script>
 </body>
 
-</html>    
+</html>
+    

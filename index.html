@@ -7,7 +7,7 @@
     <title>个人网页</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
         }
@@ -22,14 +22,17 @@
             justify-content: center;
             color: white;
             font-size: 36px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
        .section {
             padding: 40px;
+            border-bottom: 1px solid #ccc;
         }
 
        .section h2 {
             font-size: 24px;
+            color: blue;
         }
 
        .upload-container {
@@ -44,10 +47,14 @@
             margin-top: 20px;
         }
 
+       .reading-container input[type="text"],
        .reading-container textarea {
             width: 100%;
-            height: 100px;
+            padding: 10px;
             margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
 
        .image-container {
@@ -58,6 +65,32 @@
             max-width: 100%;
             height: auto;
             margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+       .image-description {
+            margin-bottom: 20px;
+        }
+
+       .image-description input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+       .button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+       .button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
@@ -75,47 +108,139 @@
         <p>我的兴趣爱好广泛，包括阅读、旅行和运动。阅读让我开阔视野，旅行让我体验不同的文化，运动则让我保持健康。</p>
         <div class="upload-container">
             <input type="file" id="travel-image-upload" accept="image/*">
-            <button onclick="uploadTravelImage()">上传旅游图片</button>
+            <input type="text" id="image-description-input" placeholder="输入图片说明">
+            <button class="button" onclick="uploadTravelImage()">上传旅游图片</button>
         </div>
         <div id="travel-image-container" class="image-container"></div>
     </div>
     <div class="section">
         <h2>读书心得</h2>
         <div class="reading-container">
+            <input type="text" id="reading-title" placeholder="输入心得标题">
             <textarea id="reading-text" placeholder="输入新的读书心得"></textarea>
-            <button onclick="addReading()">添加心得</button>
+            <button class="button" onclick="addReading()">添加心得</button>
         </div>
         <div id="reading-list"></div>
     </div>
 
     <script>
+        let db;
+        const request = indexedDB.open('personalPageDB', 1);
+
+        request.onupgradeneeded = function (event) {
+            db = event.target.result;
+            // 创建读书心得对象存储空间
+            const readingStore = db.createObjectStore('readings', { keyPath: 'id', autoIncrement: true });
+            // 创建旅游图片对象存储空间
+            const imageStore = db.createObjectStore('travelImages', { keyPath: 'id', autoIncrement: true });
+        };
+
+        request.onsuccess = function (event) {
+            db = event.target.result;
+            displayReadings();
+            displayTravelImages();
+        };
+
+        request.onerror = function (event) {
+            console.error('IndexedDB 打开失败:', event.target.error);
+        };
+
         function addReading() {
+            const readingTitle = document.getElementById('reading-title').value;
             const readingText = document.getElementById('reading-text').value;
             if (readingText) {
-                const readingList = document.getElementById('reading-list');
-                const newReading = document.createElement('p');
-                newReading.textContent = readingText;
-                readingList.appendChild(newReading);
-                document.getElementById('reading-text').value = '';
+                const transaction = db.transaction(['readings'], 'readwrite');
+                const objectStore = transaction.objectStore('readings');
+                const newReading = { title: readingTitle, text: readingText };
+                const addRequest = objectStore.add(newReading);
+
+                addRequest.onsuccess = function (event) {
+                    document.getElementById('reading-title').value = '';
+                    document.getElementById('reading-text').value = '';
+                    displayReadings();
+                };
+
+                addRequest.onerror = function (event) {
+                    console.error('添加读书心得失败:', event.target.error);
+                };
             }
         }
 
         function uploadTravelImage() {
             const input = document.getElementById('travel-image-upload');
             const file = input.files[0];
+            const description = document.getElementById('image-description-input').value;
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    const imageContainer = document.getElementById('travel-image-container');
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    imageContainer.appendChild(img);
+                    const transaction = db.transaction(['travelImages'], 'readwrite');
+                    const objectStore = transaction.objectStore('travelImages');
+                    const newImage = { data: e.target.result, description: description };
+                    const addRequest = objectStore.add(newImage);
+
+                    addRequest.onsuccess = function (event) {
+                        document.getElementById('image-description-input').value = '';
+                        displayTravelImages();
+                    };
+
+                    addRequest.onerror = function (event) {
+                        console.error('上传旅游图片失败:', event.target.error);
+                    };
                 };
                 reader.readAsDataURL(file);
             }
         }
+
+        function displayReadings() {
+            const readingList = document.getElementById('reading-list');
+            readingList.innerHTML = '';
+            const transaction = db.transaction(['readings'], 'readonly');
+            const objectStore = transaction.objectStore('readings');
+            const getAllRequest = objectStore.getAll();
+
+            getAllRequest.onsuccess = function (event) {
+                const readings = event.target.result;
+                readings.forEach(reading => {
+                    const newReadingDiv = document.createElement('div');
+                    const title = document.createElement('h3');
+                    title.textContent = reading.title || '无标题';
+                    const text = document.createElement('p');
+                    text.textContent = reading.text;
+                    newReadingDiv.appendChild(title);
+                    newReadingDiv.appendChild(text);
+                    readingList.appendChild(newReadingDiv);
+                });
+            };
+
+            getAllRequest.onerror = function (event) {
+                console.error('获取读书心得失败:', event.target.error);
+            };
+        }
+
+        function displayTravelImages() {
+            const imageContainer = document.getElementById('travel-image-container');
+            imageContainer.innerHTML = '';
+            const transaction = db.transaction(['travelImages'], 'readonly');
+            const objectStore = transaction.objectStore('travelImages');
+            const getAllRequest = objectStore.getAll();
+
+            getAllRequest.onsuccess = function (event) {
+                const images = event.target.result;
+                images.forEach(image => {
+                    const img = document.createElement('img');
+                    img.src = image.data;
+                    const description = document.createElement('p');
+                    description.textContent = image.description || '无说明';
+                    imageContainer.appendChild(img);
+                    imageContainer.appendChild(description);
+                });
+            };
+
+            getAllRequest.onerror = function (event) {
+                console.error('获取旅游图片失败:', event.target.error);
+            };
+        }
     </script>
 </body>
 
-</html>
-    
+</html>    

@@ -4,73 +4,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新建博客文章</title>
+    <title>阅读书单列表</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
             padding: 20px;
+            color: #333;
         }
 
-        label {
-            display: block;
-            margin-bottom: 5px;
+        h1,
+        h2 {
+            color: #2c3e50;
+            text-align: center;
         }
 
-        input,
-        textarea {
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            border: none;
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e0e0e0;
+        }
+
+        input {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #3498db;
+            outline: none;
         }
 
         button {
             padding: 10px 20px;
-            background-color: #007BFF;
+            background-color: #3498db;
             color: white;
             border: none;
+            border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #2980b9;
+        }
+
+        /* 为输入框的标签添加样式 */
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        /* 为添加新书区域添加样式 */
+        #addBookSection {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
     </style>
+    <!-- 引入 table2excel 插件 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/table2excel/1.1.0/jquery.table2excel.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
-    <h1>新建博客文章</h1>
-    <label for="post-title">标题：</label>
-    <input type="text" id="post-title">
-    <label for="post-content">内容：</label>
-    <textarea id="post-content" rows="10"></textarea>
-    <label for="post-image">上传图片：</label>
-    <input type="file" id="post-image" accept="image/*">
-    <button onclick="submitPost()">保存文章</button>
+    <h1>阅读书单列表</h1>
+    <table id="bookTable">
+        <thead>
+            <tr>
+                <th>书名</th>
+                <th>作者</th>
+                <th>时间</th>
+                <th>分类</th>
+                <th>主要内容</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 这里会动态添加书籍信息 -->
+        </tbody>
+    </table>
+    <div id="addBookSection">
+        <h2>添加新书</h2>
+        <label for="bookTitle">书名：</label>
+        <input type="text" id="bookTitle">
+        <label for="bookAuthor">作者：</label>
+        <input type="text" id="bookAuthor">
+        <label for="bookTime">时间：</label>
+        <input type="text" id="bookTime">
+        <label for="bookCategory">分类：</label>
+        <input type="text" id="bookCategory">
+        <label for="bookContent">主要内容：</label>
+        <input type="text" id="bookContent">
+        <button onclick="addBook()">添加</button>
+    </div>
+    <!-- 新增保存为 Excel 的按钮 -->
+    <button onclick="saveTableAsExcel()">保存为 Excel</button>
 
     <script>
-        function submitPost() {
-            const title = document.getElementById('post-title').value;
-            const content = document.getElementById('post-content').value;
-            const imageInput = document.getElementById('post-image');
-            let imageUrl = '';
+        // 页面加载时从 localStorage 中读取数据并显示
+        window.onload = function () {
+            const books = JSON.parse(localStorage.getItem('books')) || [];
+            const table = document.getElementById('bookTable').getElementsByTagName('tbody')[0];
+            books.forEach((book, index) => {
+                const newRow = table.insertRow();
+                const titleCell = newRow.insertCell(0);
+                const authorCell = newRow.insertCell(1);
+                const timeCell = newRow.insertCell(2);
+                const categoryCell = newRow.insertCell(3);
+                const contentCell = newRow.insertCell(4);
+                const actionCell = newRow.insertCell(5);
 
-            if (imageInput.files.length > 0) {
-                const file = imageInput.files[0];
-                const reader = new FileReader();
+                titleCell.innerHTML = book.title;
+                authorCell.innerHTML = book.author;
+                timeCell.innerHTML = book.time;
+                categoryCell.innerHTML = book.category;
+                contentCell.innerHTML = book.content;
+                actionCell.innerHTML = `<button onclick="deleteBook(${index})">删除</button>`;
+            });
+        };
 
-                reader.onload = function (e) {
-                    imageUrl = e.target.result;
-                    window.opener.savePost(title, content, imageUrl);
-                    window.close();
-                };
+        function addBook() {
+            const title = document.getElementById('bookTitle').value;
+            const author = document.getElementById('bookAuthor').value;
+            const time = document.getElementById('bookTime').value;
+            const category = document.getElementById('bookCategory').value;
+            const content = document.getElementById('bookContent').value;
 
-                reader.readAsDataURL(file);
-            } else {
-                window.opener.savePost(title, content, imageUrl);
-                window.close();
-            }
+            const table = document.getElementById('bookTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+
+            const titleCell = newRow.insertCell(0);
+            const authorCell = newRow.insertCell(1);
+            const timeCell = newRow.insertCell(2);
+            const categoryCell = newRow.insertCell(3);
+            const contentCell = newRow.insertCell(4);
+            const actionCell = newRow.insertCell(5);
+
+            titleCell.innerHTML = title;
+            authorCell.innerHTML = author;
+            timeCell.innerHTML = time;
+            categoryCell.innerHTML = category;
+            contentCell.innerHTML = content;
+            actionCell.innerHTML = `<button onclick="deleteBook(${newRow.rowIndex - 1})">删除</button>`;
+
+            // 将新书籍信息添加到 localStorage
+            const books = JSON.parse(localStorage.getItem('books')) || [];
+            books.push({ title, author, time, category, content });
+            localStorage.setItem('books', JSON.stringify(books));
+
+            // 清空输入框
+            document.getElementById('bookTitle').value = '';
+            document.getElementById('bookAuthor').value = '';
+            document.getElementById('bookTime').value = '';
+            document.getElementById('bookCategory').value = '';
+            document.getElementById('bookContent').value = '';
+        }
+
+        function saveTableAsExcel() {
+            $("#bookTable").table2excel({
+                filename: "阅读书单列表.xls"
+            });
+        }
+
+        function deleteBook(index) {
+            const table = document.getElementById('bookTable').getElementsByTagName('tbody')[0];
+            table.deleteRow(index);
+
+            const books = JSON.parse(localStorage.getItem('books')) || [];
+            books.splice(index, 1);
+            localStorage.setItem('books', JSON.stringify(books));
         }
     </script>
 </body>
 
-</html>    
+</html>
